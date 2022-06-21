@@ -1,3 +1,6 @@
+# 코랩에서 돌린 코드.. 가상환경에서 import가 안돼서 해결책 찾는 중.
+# 이 노트북 환경에서 돌리면 GPU 라이브러리가 없어서 안된다고 함
+# 그래픽카드가 있긴 하지만 렌더링용이라고 함
 import tensorflow as tf
 import tensorflow_datasets as tfds
 from tensorflow.keras import layers
@@ -16,7 +19,7 @@ train_dataset = tf.data.Dataset.from_tensor_slices((train_images, train_labels))
 test_dataset = tf.data.Dataset.from_tensor_slices((test_images, test_labels)).batch(32)
 
 # 모델 정의
-
+# 더 간단하게 구현해도 정확도는 비슷하게 나옴
 class MyCNNModel(tf.keras.Model):
   def __init__(self):
     super(MyCNNModel, self).__init__()
