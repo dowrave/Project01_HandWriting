@@ -1,4 +1,7 @@
-# OpenCV, Tensorflow를 이용해 마우스로 그린 글자를 분류시키는 프로그램
+## OpenCV, Tensorflow를 이용해 마우스로 그린 글자를 분류하는 프로그램
+- 아이디어를 얻은 곳
+![image](https://user-images.githubusercontent.com/87639970/174757057-bb31c24a-b62c-4549-9895-12628d124685.png)
+
 ## 진행 중
 1. `텐서플로우(low-level)`로 mnist handwriting에 관한 `cnn 모델`을 만들어 `OpenCV`에 그려진 글자를 인식시킨 뒤 분류
 <br>
