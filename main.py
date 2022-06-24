@@ -7,8 +7,10 @@ pt_x, pt_y = None, None # cv2.circle은 그리는 선이 끊기는 듯함
                         # 그래서 cv2.line의 끝 점을 설정하기 위해 별도의 변수를 둠
 
 # 모델 불러오기
-model = tf.keras.models.load_model('my_model.h5')
+model = tf.keras.models.load_model('model_220624.h5')
 
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
 # 마우스 그리기
 def draw_lines(event, x, y, flags, param):
 
@@ -20,12 +22,12 @@ def draw_lines(event, x, y, flags, param):
 
     elif event == cv2.EVENT_MOUSEMOVE:
         if drawing == True:
-            cv2.line(img, (pt_x, pt_y), (x, y), color = (0, 0, 0), thickness = 2, lineType = cv2.LINE_AA)
+            cv2.line(img, (pt_x, pt_y), (x, y), color = BLACK, thickness = 2, lineType = cv2.LINE_AA)
             pt_x, pt_y = x, y
 
     elif event == cv2.EVENT_LBUTTONUP:
         drawing = False
-        cv2.line(img, (pt_x, pt_y), (x, y), color = (0, 0, 0), thickness = 2, lineType = cv2.LINE_AA)
+        cv2.line(img, (pt_x, pt_y), (x, y), color = BLACK, thickness = 2, lineType = cv2.LINE_AA)
 
 # 일단 MNIST 필기체 인식부터 시작. 바탕은 흰색으로 ㄱㄱ
 img = np.ones((100, 100, 1), dtype = np.uint8) * 255
@@ -44,16 +46,18 @@ while True:
 
     if cv2.waitKey(5) == ord('r')  or cv2.waitKey(5) == ord('R'): # 이미지 초기화
         img = np.ones((100, 100, 1), dtype = np.uint8) * 255
-        # time.sleep(0.05)
+        # time.sleep(0.05)qqqqq
 
     # 여기가 캡쳐해서 모델로 넘겨주는 부분임
     if cv2.waitKey(5) == 32: # 스페이스바
+        # resized_img = cv2.resize(img, (28, 28))
+        # cv2.imwrite('Image/temp.png', resized_img)
         # 여기서 그림판에 그려진 글씨 자체의 array를 텐서플로우에 전달하면 됨
         # 근데 이미지 가공이 필요함 : 28 * 28을 맞춰줘야 하므로
         resized_img = cv2.resize(img, (28, 28))
-        resized_img = resized_img.reshape(28, 28, 1)
-        # print(resized_img.shape)
-        print(model.predict_step(resized_img))
+        resized_img = resized_img.reshape(1, 28, 28, 1).astype('float32') / 255.0
+        pred = model.predict_step(resized_img)
+        print(np.argmax(pred))
 
 cv2.destroyAllWindows()
 
