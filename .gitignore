@@ -15,5 +15,6 @@
 pyvenv.cfg
 .venv
 pip-selfcheck.json
+Trials_Errors_Test/
 
 # End of https://www.toptal.com/developers/gitignore/api/venv
