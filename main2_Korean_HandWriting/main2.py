@@ -5,9 +5,6 @@ import os
 import time
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
-
-
-
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 

@@ -1,4 +1,4 @@
-# 모델 실행은 구글 코랩에서 진행, 모델만 다운받아 옴.
+# 모델 실행은 구글 코랩에서 진행, 모델만 다운받음
 
 import tensorflow as tf
 from tensorflow.keras.callbacks import EarlyStopping
