@@ -161,4 +161,5 @@ model.fit(sub_images, sub_label, epochs = 30,
           validation_data = (val_images, val_label),
           callbacks=  [es])
 
+# 정확도가 너무 낮아서 2번째 시도에서는 reduce_lr과 초기 학습률을 높여 진행했으나 눈에 띄는 차이는 없었음
 # Loss 값이 9, 정확도 단위가 1e-5 여서 포기. 다른 모델과 데이터를 찾아야 할 것 같다.

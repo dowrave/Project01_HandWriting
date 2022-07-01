@@ -6,22 +6,24 @@
 2. 1.을 구현한 다음, 한글 혹은 일본어로 새로 모델을 학습시킬 계획 (`main2 폴더`) <b> 진행 중 </b>
     - (220701 이후) 모델, 데이터는 모두 가져올 예정
         - 모델 :[이 논문](https://scienceon.kisti.re.kr/commons/util/originalView.do?cn=JAKO201823955287871&oCn=JAKO201823955287871&dbt=JAKO&journal=NJOU00292001)
-        - DB : [한글 DB](https://github.com/callee2006/HangulDB)
-            - [PE92 소개서](https://www.koreascience.or.kr/article/CFKO199229013564134.pdf)
-        
+        - 데이터 : [PHD08](https://www.dropbox.com/s/69cwkkqt4m1xl55/phd08.alz?dl=0)
+            - [데이터 개요](https://www.kci.go.kr/kciportal/ci/sereArticleSearch/ciSereArtiView.kci?sereArticleSearchBean.artiId=ART001293992)
 
-    - 사용해봤으나 실제로 쓰이지 않는 글자가 많아서 폐기
+    - 사용해봤으나 실제로 쓰이지 않는 글자가 많고 각 글자의 데이터도 적어서 X
         - [ai 허브](https://aihub.or.kr/aidata/133)
+    - 별도의 확장자명으로 저장이 되어 있는데, 파이썬 & 바이너리로 정보를 뽑아내는 방법을 몰라서 사용 X
+        - DB : [PE92](https://github.com/callee2006/HangulDB)
+            - [PE92 소개서](https://www.koreascience.or.kr/article/CFKO199229013564134.pdf)
 
 3. 프로젝트 끝나면 ppt로 정리
 
 # 진행 과정
 
 ## 앞으로 할 일
-- 새로운 DB(PE92)를 이용, 모델(GoogleNet)을 가져오거나 논문을 보고 만들거나 해서 새로운 모델을 만든 뒤 h5 파일 저장 & 필기체 인식은 거의 그대로니까 갖다 쓰면 될 것 같음
+- GoogleNet은 참고할 예정이니까 유지, phd08 데이터들도 깃허브에서 받은 프로그램으로 변환 완료.
+- 넘파이 배열은 -값을 갖거나 1을 넘는 값이 넘는 경우도 있음. `minmaxscaler` 참고하자.
 
 ## 220701
-
 1. 모델 만들기 (2) : (코랩에서 진행) csv 파일을 이용해 모델 생성
     - 시각화했을 때 각 글자는 7 ~ 13개가 있는 듯 보였으나... 1개 있는 글자도 있다. 아..
     - 교훈 ) 본격적인 프로젝트 시작 전에 데이터부터 파악해둘 필요가 있다.
@@ -32,11 +34,15 @@
 2. 전처리들 끝내고(LabelEncoder, Pandas(`.apply` 등..)) `main1.py`에서 했던 모델을 거의 그대로 가져오고 마지막 분류 층의 노드 수만 11117개로 늘렸으나 학습률이 절망적임 (0.0001 수준)
     - <b>모델과 데이터 모두 바꿀 필요성</b>이 있어 보임
     - 모델은 [이 논문](https://scienceon.kisti.re.kr/commons/util/originalView.do?cn=JAKO201823955287871&oCn=JAKO201823955287871&dbt=JAKO&journal=NJOU00292001)을 참고할 예정
-    - DB는 [PE92](https://www.koreascience.or.kr/article/CFKO199229013564134.pdf)을 볼 예정이다
+    - DB는 [PE92](https://www.koreascience.or.kr/article/CFKO199229013564134.pdf)을 볼 예정이었으나
 
-3. 결론 : 오늘은 거의 판다스랑 넘파이 공부만 한 것 같다~
+3. DB가 `hdu1` 확장자명으로 저장되어 있는데 이걸 파이썬에 담을 수가 없었다(`UTF-8`, `CP949` 코덱 모두 디코드에러가 뜸)
+    - 바이너리로 읽은 뒤 `\OOO` 값이나 `\OO`값을 `decode()` 메소드나 `list()`에 담아서 볼 수 있었는데, 아무래도 별도의 방법이 필요한 듯 함(리스트에 담은 뒤 16 * 16으로 `np.reshape`를 해봤으나 글자가 아니라 이상한 모양이 나옴)
 
-
+4. 그래서 다른 DB인 `phd08`을 사용, 텍스트 파일로 저장되어 있다.
+    - 이걸 누군가가 넘파이 혹은 png 파일로 자동으로 저장할 수 있게 [프로그램](https://github.com/sungjunyoung/phd08-conversion)을 짜 둔게 있었다. 
+    - 단 2017년에 올라온 코드라 더 이상 지원하지 않는 함수 `scipy.misc.imresize`가 있어서, 이를 `np.array(PIL.Image.fromarray(arr).resize()` 함수로 바꿔서 사용했다.
+    - 이 데이터를 `15 * 15`로 바꿔서 넘파이로 저장해서 사용할 예정이다. 넘파이로 잘 불러와지는지까지 확인하고 오늘은 마무리할 예정.
 
 ## 220629
 1. 모델 만들기 (1) : json 파일 & 이미지 파일 -> csv 파일로 저장
