@@ -3,24 +3,24 @@
 # 이 프로젝트의 목표
 1. MNIST 손글씨 데이터셋을 이용, openCV로 만든 일종의 그림판에 글씨를 쓰고 spacebar를 입력받으면 텐서플로우 모델이 가장 높은 확률을 갖는 글씨 출력 (`main1 폴더`) <b>[완]</b>
     - 모델은 구글 코랩에서 만들고 `model.save`로 `h5`파일을 가져옴.
-2. 1.을 구현한 다음, 한글 혹은 일본어로 새로 모델을 학습시킬 계획 (`main2.py`)
-    - 모델, 데이터는 모두 가져올 예정
+2. 1.을 구현한 다음, 한글 혹은 일본어로 새로 모델을 학습시킬 계획 (`main2 폴더`) <b> 진행 중 </b>
+    - (220701 이후) 모델, 데이터는 모두 가져올 예정
         - 모델 :[이 논문](https://scienceon.kisti.re.kr/commons/util/originalView.do?cn=JAKO201823955287871&oCn=JAKO201823955287871&dbt=JAKO&journal=NJOU00292001)
         - DB : [한글 DB](https://github.com/callee2006/HangulDB)
-            - [PE92 설명서](https://www.koreascience.or.kr/article/CFKO199229013564134.pdf)
+            - [PE92 소개서](https://www.koreascience.or.kr/article/CFKO199229013564134.pdf)
         
 
-    - 쓸 예정이었으나 여러 이슈가 있어서 사용 X
-        - [데이터 출처](https://aihub.or.kr/aidata/133)
-3. 프로젝트 끝나면 ppt로 정리해서 따로 보관해두자(같이 첨부해두면 누가 훔쳐가려나?)
+    - 사용해봤으나 실제로 쓰이지 않는 글자가 많아서 폐기
+        - [ai 허브](https://aihub.or.kr/aidata/133)
+
+3. 프로젝트 끝나면 ppt로 정리
 
 # 진행 과정
 
+## 앞으로 할 일
+- 새로운 DB(PE92)를 이용, 모델(GoogleNet)을 가져오거나 논문을 보고 만들거나 해서 새로운 모델을 만든 뒤 h5 파일 저장 & 필기체 인식은 거의 그대로니까 갖다 쓰면 될 것 같음
+
 ## 220701
-
-### 앞으로 할 일
-- 새로운 DB를 이용, 모델을 가져오거나 논문을 보고 만들거나 해서 새로운 모델을 만든 뒤 h5 파일 저장 & 필기체 인식은 거의 그대로니까 갖다 쓰면 될 것 같음
-
 
 1. 모델 만들기 (2) : (코랩에서 진행) csv 파일을 이용해 모델 생성
     - 시각화했을 때 각 글자는 7 ~ 13개가 있는 듯 보였으나... 1개 있는 글자도 있다. 아..
@@ -30,7 +30,7 @@
     - 구현에 의의를 두기로 했으나...
 
 2. 전처리들 끝내고(LabelEncoder, Pandas(`.apply` 등..)) `main1.py`에서 했던 모델을 거의 그대로 가져오고 마지막 분류 층의 노드 수만 11117개로 늘렸으나 학습률이 절망적임 (0.0001 수준)
-    - 모델과 데이터 모두 바꿀 필요성이 있음
+    - <b>모델과 데이터 모두 바꿀 필요성</b>이 있어 보임
     - 모델은 [이 논문](https://scienceon.kisti.re.kr/commons/util/originalView.do?cn=JAKO201823955287871&oCn=JAKO201823955287871&dbt=JAKO&journal=NJOU00292001)을 참고할 예정
     - DB는 [PE92](https://www.koreascience.or.kr/article/CFKO199229013564134.pdf)을 볼 예정이다
 
