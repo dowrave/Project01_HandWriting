@@ -1,13 +1,13 @@
-# phd08 텍스트 파일을 넘파이 파일로 변환해 data 폴더에 저장
-# 원본 : https://github.com/sungjunyoung/phd08-conversion
-# 현재는 scipy.misc.imresize를 지원하지 않아 그 부분만 변경해서 (base) 환경에서 사용했음.
-
 import argparse
 import os
 import numpy as np
-from scipy.ndimage.filters import gaussian_filter
+from scipy.ndimage import gaussian_filter
 from PIL import Image
 # from scipy.misc import imresize # 없어진 함수
+
+# (수정) 데이터 100개만 변환
+limited_num = True
+counts = 100
 
 def parse_args():
     desc = "phd08 한글 텍스트 데이터를 numpy array 로 바로 변환 가능한 npy 파일 형태로 바꿔좁니다."
@@ -33,6 +33,7 @@ def font_start_checker(line):
     else:
         return False
 
+# if else문이라 continue가 필요한가 싶긴 한데... 그게 중요한 건 아니고
 
 def txt_to_npy(all_file_count, index, data, labels,
                file_full_path, width, height, sigma, is_one_hot):
@@ -69,7 +70,12 @@ def txt_to_npy(all_file_count, index, data, labels,
 
                 font_array = []
 
-                continue
+                # 100개가 채워지면 다음 파일로 넘어감
+                if limited_num == True:
+                    if len(data) == counts and len(labels) == counts:
+                        break
+                else:
+                    continue
             else:  # not endl
                 not_data_checker += 1
                 if not_data_checker == 1:  # font name
@@ -125,6 +131,7 @@ def main():
                                       args.data_dir + '/' + file, args.width, args.height, args.gaussian_sigma,
                                       args.one_hot)
 
+            # 리스트로 만들고 마지막에 np.array를 씌우는 방식임
             if index % batch_size == 0:
                 data = np.array(data, dtype=np.float32)
                 labels = np.array(labels)
