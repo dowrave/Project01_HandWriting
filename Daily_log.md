@@ -1,11 +1,11 @@
 # 프로젝트 진행 과정
 
 # 이 프로젝트의 목표
-1. MNIST 손글씨 데이터셋을 이용, openCV로 만든 일종의 그림판에 글씨를 쓰고 spacebar를 입력받으면 텐서플로우 모델이 가장 높은 확률을 갖는 글씨 출력 (`main1 폴더`) <b>[완]</b>
+1. MNIST 손글씨 데이터셋을 이용, openCV로 만든 일종의 그림판에 글씨를 쓰고 spacebar를 입력받으면 텐서플로우 모델이 가장 높은 확률을 갖는 글씨 출력 (`main1 폴더`) <b>완</b>
     - 모델은 구글 코랩에서 만들고 `model.save`로 `h5`파일을 가져옴.
 2. 1.을 구현한 다음, 한글 혹은 일본어로 새로 모델을 학습시킬 계획 (`main2 폴더`) <b> 진행 중 </b>
     - (220701 이후) 모델, 데이터는 모두 가져올 예정
-        - 모델 :[이 논문](https://scienceon.kisti.re.kr/commons/util/originalView.do?cn=JAKO201823955287871&oCn=JAKO201823955287871&dbt=JAKO&journal=NJOU00292001)
+        - 모델 :[논문1](https://scienceon.kisti.re.kr/commons/util/originalView.do?cn=JAKO201823955287871&oCn=JAKO201823955287871&dbt=JAKO&journal=NJOU00292001)과 [논문2](https://scienceon.kisti.re.kr/commons/util/originalView.do?cn=JAKO201630762630914&oCn=JAKO201630762630914&dbt=JAKO&journal=NJOU00431883)를 참고함.
         - 데이터 : [PHD08](https://www.dropbox.com/s/69cwkkqt4m1xl55/phd08.alz?dl=0)
             - [데이터 개요](https://www.kci.go.kr/kciportal/ci/sereArticleSearch/ciSereArtiView.kci?sereArticleSearchBean.artiId=ART001293992)
 
@@ -18,9 +18,56 @@
 3. 프로젝트 끝나면 ppt로 정리
 
 # 앞으로 할 일
-- 모델 성능이 매우 낮음.(`1e-4` 단위.) 왜? 언제 끝나냐 이거
+- 끝났다고 생각했지만 안 끝났죠?
+- 인풋 이미지에 `이진화 & RandomZoom & RandomRotation & RandomZoom` 적용해볼 것
 
 # 진행 과정
+
+## 220706
+### 1. 모델 만들기(실험) [완]
+- 원래 코드의 `GlobalAveragePooling2D`를 수정 (`avgpooling2D(7*7/1,), 패딩 x`)
+- 테스트 : 뭐가 원인이었는지 (궁금하니까 한다)
+    - 원인 후보들
+    1. 원래 논문의 stem 부분인 (`convolution, batch_normalization, ReLU, max_pool`)을 `convolution(relu) - max_pool - batch_normalization`으로 수정함)
+    2. `Inception` 모듈 수가 9개인데, 이거 수를 5개로 줄임
+    3. 마지막 분류 층 구성 : 논문은 `avgpooling2D (7*7/1) - Dropout(0.4) - Flatten - Dense(2350)` 으로 하라고 했는데, 이걸 다른 논문에서 가져온 `avgpooling - conv2D(128, (1,1)) -  Dense(1024) - Dropout(0.4) - Dense(2350)` 인지
+
+- 실험 (개선 없음은 1, 2 에포크에서 정확도가 모두 `1e-4~1e-5` 단위)
+    - 1. `입력층` 구성을 다르게  : 1 에포크 동안 큰 개선은 없었음
+    - 2. `Inception 모듈 수`만 줄여봄 : 큰 개선 없었음
+    - 3. `출력층` 구성만 다르게  :  큰 개선 없었음
+        - 3-1. 출력층 구성에서, `avgpooling2D` 뒤에 `conv2D(128, (1,1))`을 넣어봄 : 시간은 엄청 증가했는데, 성능 향상은 딱히?
+    - 4. Inception 모듈 수 유지(9) / `입력 & 출력층`만 변경 : 역시 큰 개선 없음
+    - 5. 입력층 유지, `Inception 수 감소 & 출력층` 변경 : 마찬가지
+    - 6. `입력층 변경 & Inception 수 감소` : 눈에 띄게 좋음(<b>에포크 2 검증 정확도 0.9847</b>)
+- 모델은 상태 6으로 학습함(실험에 쓰인 다른 상태들은 모두 주석 처리)
+    - 왜 다른 건지 알 요량은 없고 경험적으로 가장 좋은 상태로 학습
+- 어제 진행한 모델보다 나은 점이라면 학습하는 파라미터 수가 300만 vs 1200만개로 1/4로 감소한다는 점이 있겠다
+    - 이는 논문에도 나와 있지만 InceptionModule의 `5*5` 필터를 `3*3` 필터 2개로 바꿔서 연산하기 때문인 것 같음
+
+### 2. 모델 테스트
+- `100*100`에 손글씨를 그려 넣어 추론을 시도해 봄
+    - 결과는 그리 성공적이지 못하다 
+- `60*60`으로 도화지를 바꿔도 마찬가지 
+    - 딱 맞는 결과가 나온 경우는 추론 2에서 1번 나오긴 함(2번째로 높은 확률)
+    - 글씨 굵기를 키워봤는데, 별반 다르진 않은 듯?
+- 원인 분석
+    - 기존 텍스트 이미지를 확대하는 과정에서 가우시안 필터를 적용했음 
+    - 근데 내 `도화지는 0 아니면 1으로만 구성`됨
+    - 모델 학습 시 `이진화 & RandomZoom & RandomRotation & RandomZoom` 적용해봄직 한 듯
+
+## 220705
+1. 모델 만들기 : [다른 논문](https://scienceon.kisti.re.kr/commons/util/originalView.do?cn=JAKO201630762630914&oCn=JAKO201630762630914&dbt=JAKO&journal=NJOU00431883)
+    - `GlobalAveragePooling`이 문제였나..? 
+        - 저거를 `AveragePooling2D(7*7, 1, padding='valid')` -> `Conv2D((1,1), 128)` -> `Flatten()` -> `Dense(1024)` -> 
+        `Dropout(0.7)` -> `Dense(num_classes = 2350)` 으로 하니까 올라감
+        - 원래 했던 모델에 적용해봐야겠다
+        - 물론 원래 모델의 인셉션 층이 9개여서 Gradient Vanishing이 일어난 걸 수도 있음
+            - 너무 깊음 + 중간 층이 없으니까
+            - 근데 논문에선 된다고 했으니까 내 설계문제일 가능성이 더 큼
+        - 학습 잘 되고 있는 듯
+
+
 
 ## 220704
 1. 모델 만들기 - 근데 코드가 나와 있는 게 아니라서 직접 구현해야 함

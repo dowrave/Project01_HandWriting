@@ -9,9 +9,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import tensorflow as tf
 import os
+import pickle
 from sklearn.preprocessing import MinMaxScaler
-from sklearn.model_selection import train_test_split
 from tensorflow.keras import layers
+from tensorflow.keras.utils import plot_model
+from sklearn.model_selection import train_test_split
+from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 
 
 directory = './drive/MyDrive/Project/data/'
@@ -54,7 +57,6 @@ np.save('./drive/MyDrive/Project/image_arr.npy',image_arr)
 np.save('./drive/MyDrive/Project/label_arr.npy',label_arr)
 
 # 모델 불러오기 ~ 모델 생성 및 훈련
-
 image_arr = np.load('/content/drive/MyDrive/Project/image_arr.npy')
 label_arr = np.load('/content/drive/MyDrive/Project/label_arr.npy')
 
@@ -107,17 +109,24 @@ def revised_inception_module(x, filters_1x1, filters_3x3_reduce, filters_3x3,
   return output   
 
 # 전체 모델 구성
-
 img_size = (60, 60, 1)
 
 input_layer = layers.Input(shape = img_size)
 
 # 층 1 - Stem
-x = layers.Conv2D(64, (5, 5), strides = (1, 1), name = 'conv_1_5x5/1', kernel_initializer = kernel_init,
+
+# 논문 버전
+# x = layers.Conv2D(64, (5, 5), strides = (1, 1), name = 'conv_1_5x5/1', kernel_initializer = kernel_init,
+#                   bias_initializer = bias_init)(input_layer)
+# x = layers.BatchNormalization()(x)
+# x = layers.ReLU()(x)
+# x = layers.MaxPool2D( (3,3) , strides = (2, 2), name = 'maxpool_1_3x3/2', padding = 'same')(x)
+
+# 다른 논문 버전 
+x = layers.Conv2D(64, (5, 5), strides = (1, 1), name = 'conv_1_5x5/1', activation = 'relu', kernel_initializer = kernel_init,
                   bias_initializer = bias_init)(input_layer)
-x = layers.BatchNormalization()(x)
-x = tf.keras.activations.relu(x)
 x = layers.MaxPool2D( (3,3) , strides = (2, 2), name = 'maxpool_1_3x3/2', padding = 'same')(x)
+x = layers.BatchNormalization()(x)
 
 # 층 2 : Inception Module
 x = revised_inception_module(x, 32, 24, 32, 32, 48, 48, 16, name = "Inception_a")
@@ -128,27 +137,43 @@ x = layers.MaxPool2D( (3,3) , strides = (2, 2), name = 'maxpool_2_3x3/2', paddin
 
 # 층 3 : Inception Module
 x = revised_inception_module(x, 64, 48, 64, 64, 96, 96, 32, name = "Inception_b_2")
-x = revised_inception_module(x, 64, 48, 64, 64, 96, 96, 32, name = "Inception_b_3")
-x = revised_inception_module(x, 64, 48, 64, 64, 96, 96, 32, name = "Inception_b_4")
-x = revised_inception_module(x, 64, 48, 64, 64, 96, 96, 32, name = "Inception_b_5")
+# x = revised_inception_module(x, 64, 48, 64, 64, 96, 96, 32, name = "Inception_b_3")
+# x = revised_inception_module(x, 64, 48, 64, 64, 96, 96, 32, name = "Inception_b_4")
+# x = revised_inception_module(x, 64, 48, 64, 64, 96, 96, 32, name = "Inception_b_5")
 x = revised_inception_module(x, 128, 96, 128, 128, 192, 192, 64, name = 'Inception_c_1')
 
 x = layers.MaxPool2D( (3,3) , strides = (2, 2), name = 'maxpool_2_3x3/3', padding = 'same')(x)
 
 # 층 4
 x = revised_inception_module(x, 128, 96, 128, 128, 192, 192, 64, name = 'Inception_c_2')
-x = revised_inception_module(x, 128, 96, 128, 128, 192, 192, 64, name = 'Inception_c_3')
+# x = revised_inception_module(x, 128, 96, 128, 128, 192, 192, 64, name = 'Inception_c_3')
 
-x = layers.GlobalAveragePooling2D(name = 'GlobalAvgPooling')(x)
+# x = layers.GlobalAveragePooling2D(name = 'GlobalAvgPooling')(x)
+
+# 원래 논문의 방법
+x = layers.AveragePooling2D((7,7), strides = (1, 1), padding = 'valid', name = 'avgpool_1_7x7')(x)
+# x = layers.Conv2D(128, (1,1), padding = 'same', strides = (1, 1))(x) 
 x = layers.Dropout(0.4)(x)
+# x = layers.Dense(512)(x)
+x = layers.Flatten()(x)
 x = layers.Dense(num_classes)(x)
+
+# 다른 방법인데 잘 작동함
+# 원본 논문에는 없는데 다른 논문에선 잘 작동한 적 있어서 이 방법을 써봄
+# x = layers.AveragePooling2D((7,7), strides = (1, 1), padding = 'valid', name = 'avgpool_1_7x7')(x)
+# x = layers.Conv2D(128, (1,1), padding = 'same', strides = (1, 1))(x)
+# x = layers.Flatten()(x)
+# x = layers.Dense(512)(x)
+# x = layers.Dropout(0.4)(x)
+# x = layers.Dense(num_classes)(x)
 
 model = tf.keras.Model(input_layer, x, name = 'Model')
 
-# model.summary()
+# 원래 GoogLenet에서는 보조분류기(중간에서 역전파 그래디언트를 전달하는 역할)를 사용하나,
+# 해당 논문에서는 코스트에 비해 성능 향상폭이 높지 않다고 판단해 제외되었음
 
-# es = EarlyStopping(monitor = 'val_loss', patience = 5, restore_best_weights = True)
-lr = tf.keras.callbacks.ReduceLROnPlateau(monitor = 'val_loss', factor = 0.5, patience = 5, min_lr = 1e-4)
+
+# model.summary()
 
 optimizer = tf.keras.optimizers.Adam(learning_rate = 0.001)
 
@@ -156,7 +181,16 @@ model.compile(optimizer = optimizer,
               loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits = True),
               metrics = ['Accuracy'])
 
+lr = ReduceLROnPlateau(monitor = 'val_loss', factor = 0.5, patience = 5, min_lr = 1e-4)
+es = EarlyStopping(monitor = 'val_loss', patience = 6, restore_best_weights = True)
+
 model.fit(sub_img, sub_label, epochs = 100,
           batch_size = 128,
           validation_data = (val_img, val_label),
           callbacks = [lr])
+
+model.evaluate(test_img, test_label) # loss : 0.0022, accuracy : 0.9994
+
+model.save('korean_model_220706.h5')
+
+

@@ -10,7 +10,7 @@ pt_x, pt_y = None, None # cv2.circle은 그리는 선이 끊기는 듯함
                         # 그래서 cv2.line의 끝 점을 설정하기 위해 별도의 변수를 둠
 
 # 모델 불러오기
-model = tf.keras.models.load_model('model_220628.h5')
+model = tf.keras.models.load_model('./model/model_220628.h5')
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)

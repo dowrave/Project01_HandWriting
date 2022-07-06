@@ -47,7 +47,7 @@ model = tf.keras.Sequential([
     tf.keras.layers.Dense(10)
 ])
 
-es = EarlyStopping(monitor = 'val_loss', patience = 3, restore_best_weights = True)
+es = EarlyStopping(monitor = 'val_loss', patience = 5, restore_best_weights = True)
 
 model.compile(optimizer = 'adam', # adam 디폴트 lr : 1e-3 인데 LROnplateau를 안 쓰게 되어서 상관없어짐
               loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits = True), # 결과 : 정수, softmax 사용 안해도 됨
