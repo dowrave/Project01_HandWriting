@@ -5,7 +5,7 @@ import os
 import time
 import pickle
 
-model = tf.keras.models.load_model('./model/korean_model_220706.h5')
+model = tf.keras.models.load_model('./model/korean_model_220707.h5')
 
 with open('./main2_Korean_HandWriting/kr_label.pkl', 'rb') as f:
 	data = pickle.load(f)
@@ -18,6 +18,7 @@ img_size = (60, 60, 1)
 # 필기체 구현 파라미터
 drawing = False
 pt_x, pt_y = None, None 
+THICKNESS = 3 # 굵기 2 이하는 잘 인식 못함
 
 # 마우스 콜백 함수
 def draw_lines(event, x, y, flags, param):
@@ -30,12 +31,12 @@ def draw_lines(event, x, y, flags, param):
 
     elif event == cv2.EVENT_MOUSEMOVE:
         if drawing == True:
-            cv2.line(img, (pt_x, pt_y), (x, y), color = BLACK, thickness = 3, lineType = cv2.LINE_AA)
+            cv2.line(img, (pt_x, pt_y), (x, y), color = BLACK, thickness = THICKNESS, lineType = cv2.LINE_AA)
             pt_x, pt_y = x, y
 
     elif event == cv2.EVENT_LBUTTONUP:
         drawing = False
-        cv2.line(img, (pt_x, pt_y), (x, y), color = BLACK, thickness = 3, lineType = cv2.LINE_AA)
+        cv2.line(img, (pt_x, pt_y), (x, y), color = BLACK, thickness = THICKNESS, lineType = cv2.LINE_AA)
 
 img = np.ones(img_size, dtype = np.float32) * 255
 cv2.namedWindow('image')

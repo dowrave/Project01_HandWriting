@@ -6,7 +6,8 @@
 2. 1.을 구현한 다음, 한글 혹은 일본어로 새로 모델을 학습시킬 계획 (`main2 폴더`) <b> 진행 중 </b>
     - (220701 이후) 모델, 데이터는 모두 가져올 예정
         - 모델 :[논문1](https://scienceon.kisti.re.kr/commons/util/originalView.do?cn=JAKO201823955287871&oCn=JAKO201823955287871&dbt=JAKO&journal=NJOU00292001)과 [논문2](https://scienceon.kisti.re.kr/commons/util/originalView.do?cn=JAKO201630762630914&oCn=JAKO201630762630914&dbt=JAKO&journal=NJOU00431883)를 참고함.
-        - 데이터 : [PHD08](https://www.dropbox.com/s/69cwkkqt4m1xl55/phd08.alz?dl=0)
+        - 데이터 : 손글씨는 아니고 폰트이지만 가져옴
+            - [PHD08](https://www.dropbox.com/s/69cwkkqt4m1xl55/phd08.alz?dl=0)
             - [데이터 개요](https://www.kci.go.kr/kciportal/ci/sereArticleSearch/ciSereArtiView.kci?sereArticleSearchBean.artiId=ART001293992)
 
     - 사용해봤으나 실제로 쓰이지 않는 글자가 많고 각 글자의 데이터도 적어서 X
@@ -15,13 +16,46 @@
         - DB : [PE92](https://github.com/callee2006/HangulDB)
             - [PE92 소개서](https://www.koreascience.or.kr/article/CFKO199229013564134.pdf)
 
-3. 프로젝트 끝나면 ppt로 정리
+# 참고
+- 모델을 생성하는 파일은 파이썬 파일로만 같이 저장(`model_date.py`)하고 있음. 코랩에서 실행함
+- 깃허브에 모델 파일은 용량이 커서 올리지 않는 걸로..
 
 # 앞으로 할 일
-- 끝났다고 생각했지만 안 끝났죠?
-- 인풋 이미지에 `이진화 & RandomZoom & RandomRotation & RandomZoom` 적용해볼 것
+- 도화지 크기 키우기 :  opencv에서 이미지 자를 영역을 자동으로 구해서 그 부분을 추론 모델에 전달
+- 데이터셋 재구성 : 폰트 여러개로 구성, 단일 글자당 81개로 학습시켜보자
 
 # 진행 과정
+
+## 220707
+
+### 1. 모델 다시 만들고 실성능 테스트
+- 어떻게 구성할 지 고민임
+1. 모델 : `이진화, RandomZoom, RandomRotation` 적용할 예정
+2. 그림판 : 텍스트가 써진 영역만 잘라서 추론 모델에 넣는 것도 생각해볼 수 있겠다
+
+- 일단 1부터 진행 : `이진화, RandomZoom 추가` / `RandomRotation은 제외` (원본 데이터가 -3, 0, 3도 회전되어 있음)
+    - `RandomZoom 층`을 케라스 레이어로 구현하고, 이진화는 Zoom 이후에 진행(Zoom 과정에서 Interpolation이 일어나기 때문에)
+        - 근데 `RandomZoom` 값이 양수일 때 작아지는 거였네? 음수일 때 작아지는 건줄..
+
+### 결과 : 이전보다는 눈에 띄게 좋아짐 (`korean_model_220707.h5`)
+- 그래도 복잡한 자음이나, 받침이 있는 글자 등에서 여전히 혼선이 있음
+
+
+### 2. 인풋 데이터 재구성
+- `phd08`은 글자 당 9종류의 폰트로 이루어졌다
+    - 글자 크기 3가지(12, 13 ,14)
+    - 노이즈 레벨 3가지 (원본, 1회 복사, 2회 복사)
+    - 스캔 해상도 3가지(200, 240, 280)
+    - 이진화 3가지(140, 180, 220)
+    - 회전 3가지(-3, 0, 3도)
+    - 글자당 `3^5 * 9 = 2187`개의 샘플이 있음
+- 지금까지 해온 데이터는 앞에서부터 50개만 뽑았기 때문에 폰트가 모두 동일하다
+    - 즉 한 종류의 폰트에 대해 학습했기 때문에 다른 형태의 폰트가 온다면 제대로 예측하지 못할 가능성이 높아진다
+    - 딱히 변수로 넣지 않는 케이스들 : `노이즈 레벨, 스캔 해상도, 이진화`
+        - `60*60`으로 이미지를 확대하는 과정에서 어차피 다시 한 번 만져줘야 하기 때문
+        - 코랩 램의 한계때문에 가장 눈에 띄는 특징들인 `글자 크기 3가지와 회전 3가지`만 이용하자 
+            - 폰트가 9개니까 한 글자당 81개의 이미지를 사용하는 셈
+
 
 ## 220706
 ### 1. 모델 만들기(실험) [완]
@@ -54,7 +88,7 @@
 - 원인 분석
     - 기존 텍스트 이미지를 확대하는 과정에서 가우시안 필터를 적용했음 
     - 근데 내 `도화지는 0 아니면 1으로만 구성`됨
-    - 모델 학습 시 `이진화 & RandomZoom & RandomRotation & RandomZoom` 적용해봄직 한 듯
+    - 모델 학습 시 `이진화 & RandomZoom & RandomRotation` 적용해볼만 한 듯
 
 ## 220705
 1. 모델 만들기 : [다른 논문](https://scienceon.kisti.re.kr/commons/util/originalView.do?cn=JAKO201630762630914&oCn=JAKO201630762630914&dbt=JAKO&journal=NJOU00431883)
