@@ -49,8 +49,8 @@ model = tf.keras.Sequential([
 
 es = EarlyStopping(monitor = 'val_loss', patience = 5, restore_best_weights = True)
 
-model.compile(optimizer = 'adam', # adam 디폴트 lr : 1e-3 인데 LROnplateau를 안 쓰게 되어서 상관없어짐
-              loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits = True), # 결과 : 정수, softmax 사용 안해도 됨
+model.compile(optimizer = 'adam', 
+              loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits = True), 
               metrics = ['accuracy'],)
 
 model.fit(train_images, train_labels, epochs = 30,
@@ -58,7 +58,6 @@ model.fit(train_images, train_labels, epochs = 30,
           callbacks=  [es])
 
 # loss: 0.1446 - accuracy: 0.9565 - val_loss: 0.0504 - val_accuracy: 0.9854 (16에포크에서 최고 값)
-# Underfitting이긴 한데, 이미지 증강 층 때문에 발생한 현상으로 보임
 
 # 테스트 데이터로 성능 평가
 model.evaluate(test_images, test_labels) # loss: 0.0491 - accuracy: 0.9847

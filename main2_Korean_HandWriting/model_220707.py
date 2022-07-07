@@ -6,20 +6,18 @@ from google.colab import drive
 drive.mount('/content/drive')
 
 import numpy as np
-# import pandas as pd
 import matplotlib.pyplot as plt
 import tensorflow as tf
 import os
 from sklearn.preprocessing import MinMaxScaler
 
 directory = './drive/MyDrive/Project/data/'
-# 수정 : 파일 1개당 1개의 label만 들어가게 조정함 - 파일 갯수 * label 수 // 2 가 전체 데이터 수
-print(len(os.listdir(directory)))  # 2350 * 2여야 되는 거 아님? 
-# print(os.listdir(directory)) 
 
-# 220704 : each_size, width, height 수정
+print(len(os.listdir(directory)))  
+
+
 label = 2350
-each_size = 81 # 220704 : 100 -> 50개로 축소(코랩 램 이슈)
+each_size = 81 
 total_size = label * each_size
 img_width = 60
 img_height = 60
@@ -27,8 +25,6 @@ img_height = 60
 # 총 arr의 사이즈를 생각해 미리 만들어 둠
 image_arr = np.empty((total_size, img_width, img_height), dtype = np.float32) # np.float16은 plt.imshow()가 되지 않는다
 label_arr = np.empty(total_size, )
-
-# print(image_arr.shape, label_arr.shape)
 
 # 정규화 후 넘파이 파일로 저장
 for i in range(len(os.listdir(directory)) // 2):
@@ -44,7 +40,7 @@ for i in range(len(os.listdir(directory)) // 2):
     
     if i % 100 == 0:
       print("Processing : ", np.round(i / (len(os.listdir(directory)) // 2) * 100), " % ")
-# print(image.shape, label.shape)
+
 
 # 넘파이 파일 저장
 np.save('./drive/MyDrive/Project/image_arr.npy',image_arr)
@@ -67,13 +63,13 @@ from sklearn.model_selection import train_test_split
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 import cv2 
 
-# connect google drive
-# from google.colab import drive
-# drive.mount('/content/drive')
+connect google drive
+from google.colab import drive
+drive.mount('/content/drive')
 
 # dict 파일 불러오기 (코랩 전용)
-# !pip install pickle5
-# import pickle5 as pickle
+!pip install pickle5
+import pickle5 as pickle
 
 image_arr = np.load('/content/drive/MyDrive/Project/image_arr.npy')
 label_arr = np.load('/content/drive/MyDrive/Project/label_arr.npy')

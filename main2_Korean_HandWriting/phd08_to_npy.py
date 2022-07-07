@@ -6,15 +6,15 @@ from PIL import Image
 import re
 # from scipy.misc import imresize # 없어진 함수
 # cmd에서 다음 명령어로 실행 : python phd08_to_npy.py --data_dir=phd08_inputs --width=60 --height=60 --batch_size=1
-# 
+
 # (수정) 갯수 제한 변수
-limited_num = True
+limited_num = True # 정규식 만족하는 조건들만 고르기 위한 변수
 counts = 100
 
+# 실제로는 counts = 50으로 놓고 50개만 뽑고 다음 파일로 넘어가게끔 사용함
 # 220707 : 글자 별로 조건에 맞는 데이터 81개(9 * 3 * 3)만 뽑아서 씀
-# 되는지는 테스트해봐야 함
-a = re.compile("[A-Z0-9]+_[0-2]_0_2_1_[0-2]") # FO_FS_0_2_1_SL 형태
-target_checker = False
+# a = re.compile("[A-Z0-9]+_[0-2]_0_2_1_[0-2]") # FO_FS_0_2_1_SL 형태
+# target_checker = False
 
 def parse_args():
     desc = "phd08 한글 텍스트 데이터를 numpy array 로 바로 변환 가능한 npy 파일 형태로 바꿔좁니다."
