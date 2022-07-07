@@ -3,11 +3,18 @@ import os
 import numpy as np
 from scipy.ndimage import gaussian_filter
 from PIL import Image
+import re
 # from scipy.misc import imresize # 없어진 함수
-
-# (수정) 데이터 100개만 변환
+# cmd에서 다음 명령어로 실행 : python phd08_to_npy.py --data_dir=phd08_inputs --width=60 --height=60 --batch_size=1
+# 
+# (수정) 갯수 제한 변수
 limited_num = True
 counts = 100
+
+# 220707 : 글자 별로 조건에 맞는 데이터 81개(9 * 3 * 3)만 뽑아서 씀
+# 되는지는 테스트해봐야 함
+a = re.compile("[A-Z0-9]+_[0-2]_0_2_1_[0-2]") # FO_FS_0_2_1_SL 형태
+target_checker = False
 
 def parse_args():
     desc = "phd08 한글 텍스트 데이터를 numpy array 로 바로 변환 가능한 npy 파일 형태로 바꿔좁니다."
@@ -21,31 +28,35 @@ def parse_args():
                         help='저장할때의 세로 어레이 사이즈', required=False)
     parser.add_argument('--gaussian_sigma', type=float, default=.3,
                         help='가우시안 필터 적용 시 시그마 값', required=False)
-    parser.add_argument('--batch_size', type=int, default=2,
+    parser.add_argument('--batch_size', type=int, default=1,
                         help='몇개의 글자씩 합쳐서 저장할 것인지 (max 10)', required=False)
 
     return parser.parse_args()
 
 
 def font_start_checker(line):
-    if not line.strip():
-        return True
+    if not line.strip(): # line.strip() : 각 줄의 사이드를 없애고 남은 내용
+        return True # 
     else:
         return False
 
-# if else문이라 continue가 필요한가 싶긴 한데... 그게 중요한 건 아니고
 
+
+# if else문이라 continue가 필요한가 싶긴 한데...
 def txt_to_npy(all_file_count, index, data, labels,
                file_full_path, width, height, sigma, is_one_hot):
     index -= 1
+    global target_checker
     with open(file_full_path, 'r') as lines:
         font_counter = 0
         not_data_checker = 0
         font_array = []
         real_data_counter = 0
         for line in lines:
-            if font_start_checker(line):  # endl
+            if font_start_checker(line):  # endl / 어떤 줄의 남은 내용이 없으면 True, 있으면 False임
+                                          # 즉 데이터를 다 집어넣고 빈 칸이 나오면 여태까지 담은 array를 정리하는 거임
                 not_data_checker = 0
+                target_checker = False
                 font_counter += 1
                 real_data_counter = 0
 
@@ -70,25 +81,38 @@ def txt_to_npy(all_file_count, index, data, labels,
 
                 font_array = []
 
-                # 100개가 채워지면 다음 파일로 넘어감
-                if limited_num == True:
-                    if len(data) == counts and len(labels) == counts:
-                        break
-                else:
-                    continue
+                # 100개가 채워지면 다음 파일로 넘어감 - 220707 : 없애도 될 것 같긴 함
+                if len(data) == counts and len(labels) == counts:
+                    break
+
+                continue
+        
             else:  # not endl
                 not_data_checker += 1
                 if not_data_checker == 1:  # font name
+                    # 여기서 설정할 수 있을 거 같음
+                    # FO_FS_CP_RE_TH_SL 형태고
+                    # FO_FS_0_2_1_SL (폰트 종류 9개/ 크기 3개 / 복사 0 / 해상도 280 / 이진 임계치 180 / 기울기 3개) 이렇게만 쓸 예정
+                    if a.match(line):
+                        target_checker = True
+                    else: 
+                        continue
+                elif target_checker: # target_checker가 켜진 경우 글자들을 넣어준다
+                    if not_data_checker == 2:  # font size
+                        arr_height = int(line.split(' ')[0])
+                        arr_width = int(line.split(' ')[1])
+                        font_array = np.zeros(shape=(arr_height, arr_width))
+                        continue
+                    else:  # this is real data
+                        font_array[real_data_counter] = list(map(int, line.strip()))
+                        real_data_counter += 1
+                        continue
+                else:
+                    # 각 데이터별 2번째 줄부터이면서 target_checker가 꺼졌고 line에 데이터가 있는 경우
+                    # line에 들어오는 데이터가 없어질 때까지 계속 continue하면 됨
                     continue
-                elif not_data_checker == 2:  # font size
-                    arr_height = int(line.split(' ')[0])
-                    arr_width = int(line.split(' ')[1])
-                    font_array = np.zeros(shape=(arr_height, arr_width))
-                    continue
-                else:  # this is real data
-                    font_array[real_data_counter] = list(map(int, line.strip()))
-                    real_data_counter += 1
-                    continue
+                
+
     return data, labels
 
 
@@ -119,6 +143,7 @@ def main():
             if file[0] == '.':
                 continue
             all_file_count += 1
+
 
     for _, _, files in os.walk(args.data_dir):
         index = 0

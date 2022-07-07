@@ -6,7 +6,7 @@ from google.colab import drive
 drive.mount('/content/drive')
 
 import numpy as np
-import pandas as pd
+# import pandas as pd
 import matplotlib.pyplot as plt
 import tensorflow as tf
 import os
@@ -19,7 +19,7 @@ print(len(os.listdir(directory)))  # 2350 * 2여야 되는 거 아님?
 
 # 220704 : each_size, width, height 수정
 label = 2350
-each_size = 50 # 220704 : 100 -> 50개로 축소(코랩 램 이슈)
+each_size = 81 # 220704 : 100 -> 50개로 축소(코랩 램 이슈)
 total_size = label * each_size
 img_width = 60
 img_height = 60
