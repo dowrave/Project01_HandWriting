@@ -12,7 +12,7 @@
 
 ### 쓰려다 못 쓴 데이터
 - 사용해봤으나 실제로 쓰이지 않는 글자가 많고 각 글자의 데이터도 적어서 X
-    - [ai 허브](https://aihub.or.kr/aidata/133)
+    - [ai 허브](https://aihub.or.kr/aihubdata/data/view.do?currMenu=115&topMenu=100&aihubDataSe=realm&dataSetSn=81)
 - 별도의 확장자명으로 저장이 되어 있는데, 파이썬 & 바이너리로 정보를 뽑아내는 방법을 몰라서 사용 X
     - DB : [PE92](https://github.com/callee2006/HangulDB)
         - [PE92 소개서](https://www.koreascience.or.kr/article/CFKO199229013564134.pdf)

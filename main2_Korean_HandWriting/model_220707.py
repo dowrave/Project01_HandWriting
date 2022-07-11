@@ -91,23 +91,8 @@ data_augmentation = tf.keras.Sequential([
 image_arr = data_augmentation(image_arr.reshape(-1, 60, 60, 1)).numpy()
 image_arr = (image_arr * 255).astype('uint8').reshape(-1, 60, 60) # 이진화를 위해선 데이터타입이 uint8이어야 함
 
-# 전처리 이전 시각화
-# fig, ax = plt.subplots(2,5)
-# for i in range(2):
-#   for j in range(5):
-#     ax[i][j].imshow(image_arr[200*i + 49*j], cmap = 'gray')
-#     ax[i][j].axis('off')
-
-# 
 for i in range(image_arr.shape[0]):
   _, image_arr[i] = cv2.threshold(image_arr[i], -1, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
-
-# 전처리 결과 확인 
-# fig, ax = plt.subplots(2,5)
-# for i in range(2):
-#   for j in range(5):
-#     ax[i][j].imshow(image_arr[200*i + 49*j], cmap = 'gray')
-#     ax[i][j].axis('off')
 
 # 훈련 & 테스트 데이터 분리
 image_arr = image_arr.reshape(-1, image_arr.shape[1], image_arr.shape[2], 1).astype(np.float32) / 255.0 # 앞에서 255를 곱해줬으니 여기서 다시 정규화해준다

@@ -5,7 +5,7 @@ import os
 import time
 import pickle
 
-model = tf.keras.models.load_model('./model/korean_model_220707.h5')
+model = tf.keras.models.load_model('./main2_Korean_HandWriting/korean_model_220707.h5')
 
 with open('./main2_Korean_HandWriting/kr_label.pkl', 'rb') as f:
 	data = pickle.load(f)
