@@ -21,7 +21,7 @@ OpenCV로 만든 필기체 이미지를 텐서플로우 모델에 넘겨 어떤 
 2. `main2` 폴더
     - 구글 코랩 환경에서 `phd08`이라는 한글 단일 글씨 데이터셋을 이용, `60*60*1`의 OpenCV 이미지를 2350개의 Label로 구분하는 GoogLeNet을 간소화한 모델을 생성한 뒤 로컬에 저장했습니다. 
     - 로컬에서는 위와 같이 `100*100*1`의 이미지를 `60*60*1`로 리사이징 및 이진화하여 추론했습니다.
-    - 모델 이미지 : 
+    - [모델 이미지](https://github.com/dowrave/Project01_HandWriting/blob/main/Image_ForReadMe/korean_model_220707.png)
 <details>
 <summary><h2>실행 방법</h2></summary>
 1. main1 폴더의  main1.py or main2 폴더의 main2.py (단일 한글 글자)를 실행 </br> 
